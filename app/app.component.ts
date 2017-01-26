@@ -2,7 +2,8 @@ import { Component, NgZone, ViewChild, OnInit } from "@angular/core";
 import * as application from "application";
 import {registerElement} from "nativescript-angular/element-registry";
 import { MapView } from "nativescript-google-maps-sdk";
-import { Location, Options, isEnabled, enableLocationRequest, watchLocation, clearWatch } from "nativescript-geolocation";
+import { Location, Options } from "nativescript-geolocation";
+import { MonitoringService } from "./service/monitoring.service";
 
 // Important - must register MapView plugin in order to use in Angular templates
 registerElement("MapView", () => MapView);
@@ -15,19 +16,18 @@ declare var GMSServices: any;
 })
 export class AppComponent implements OnInit {
 
-    private isMonitoring: boolean = false;
-    private locationOptions: Options = {
-        minimumUpdateTime: 5000
+    private options: Options = {
+        minimumUpdateTime: 10000
     };
-    private monitorId: number;
+    private monitorId?: number = null;
 
-    private lastTimestamp: string = "";
+    private lastTimestamp: Date = null;
     private latitude: number;
     private longitude: number;
     private zoom: number;
 
     constructor(
-        private zone: NgZone
+        private monitoringService: MonitoringService
     ) {
         this.resetMapToDefaults();
     }
@@ -44,29 +44,24 @@ export class AppComponent implements OnInit {
     }
 
     startMonitoring() {
-        console.log("startMonitoring()");
-        if (isEnabled()) {
-            if (!this.isMonitoring) {
-                this.monitorId = watchLocation(location => {
+        if (this.monitoringService.isEnabled()) {
+            if (!this.monitorId) {
+                this.monitorId = this.monitoringService.watchLocation(location => {
                     if (location) {
-                        this.zone.run(() => {
-                            this.lastTimestamp = new Date().toString();
-                            console.log("location at ["+this.lastTimestamp+"]: "+JSON.stringify(location));
-                            this.latitude = location.latitude;
-                            this.longitude = location.longitude;
-                            this.zoom = 12.4;
-                        });
+                        console.log("location at ["+location.timestamp.toString()+"]: "+JSON.stringify(location));
+                        this.lastTimestamp = location.timestamp;
+                        this.latitude = location.latitude;
+                        this.longitude = location.longitude;
                     }
                 }, (error) => {
                     console.error("Error: during watchLocation()");
-                }, this.locationOptions);
-                this.isMonitoring = true;
+                });
             } else {
                 console.error("Error: already monitoring.");
             }
         } else {
-            console.warn("Error: isEnabled() === false");
-            enableLocationRequest(true).then(() => {
+            console.warn("Warning: isEnabled() === false");
+            this.monitoringService.enableLocationRequest(true).then(() => {
                 console.log("Success: user granted access to location services.");
                 this.startMonitoring();
             }, (rejectionError) => {
@@ -82,9 +77,8 @@ export class AppComponent implements OnInit {
     }
 
     stopMonitoring() {
-        console.log("stopMonitoring()");
-        clearWatch(this.monitorId);
-        this.isMonitoring = false;
+        this.monitoringService.clearWatch(this.monitorId);
+        this.monitorId = null;
         this.resetMapToDefaults();
     }
 
@@ -95,6 +89,6 @@ export class AppComponent implements OnInit {
     resetMapToDefaults() {
         this.latitude = 38.73686;
         this.longitude = -96.20872;
-        this.zoom = 3.1;
+        this.zoom = 3;
     }
 }

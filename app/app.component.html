@@ -1,12 +1,15 @@
 <ActionBar title="Location">
-    <ActionItem *ngIf="!isMonitoring" text="Start" (tap)="onStartTapped($event)"></ActionItem>
-    <ActionItem *ngIf="isMonitoring" text="Stop" (tap)="onStopTapped($event)"></ActionItem>
+    <ActionItem *ngIf="monitorId == null" text="Start" (tap)="onStartTapped($event)"></ActionItem>
+    <ActionItem *ngIf="monitorId != null" text="Stop" (tap)="onStopTapped($event)"></ActionItem>
 </ActionBar>
 <GridLayout rows="auto, *" columns="*">
 
     <StackLayout row="0" class="p-16">
-        <Label text="{{'Last location updated: '+lastTimestamp}}"></Label>
-        <Label text="{{'Coordinates: ('+latitude+', '+longitude+')'}}"></Label>
+        <Label text="{{'Location: '+(lastTimestamp ? lastTimestamp.toString() : '')}}"></Label>
+        <Label text="{{'Latitude: '+(latitude ? latitude.toString().substring(0, 7) : '')}}"></Label>
+        <Label text="{{'Longitude: '+(longitude ? longitude.toString().substring(0, 7) : '')}}"></Label>
+        <Label text="Zoom:"></Label>
+        <Slider [minValue]="1" [maxValue]="15" [(ngModel)]="zoom"></Slider>
     </StackLayout>
 
     <MapView row="1" #mapView (mapReady)="onMapReady($event)" [latitude]="latitude" [longitude]="longitude" [zoom]="zoom"></MapView>
