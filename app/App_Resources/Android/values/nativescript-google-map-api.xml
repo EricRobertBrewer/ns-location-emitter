@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Also see app.component.ts -->
+     <string name="nativescript_google_maps_api_key">AIzaSyCM2qDN-vQQuNF9F409MdQYN_lLU0bTims</string> 
+</resources>

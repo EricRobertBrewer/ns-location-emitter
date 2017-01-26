@@ -1,2 +1,14 @@
-<StackLayout>
-</StackLayout>
+<ActionBar title="Location">
+    <ActionItem *ngIf="!isMonitoring" text="Start" (tap)="onStartTapped($event)"></ActionItem>
+    <ActionItem *ngIf="isMonitoring" text="Stop" (tap)="onStopTapped($event)"></ActionItem>
+</ActionBar>
+<GridLayout rows="auto, *" columns="*">
+
+    <StackLayout row="0" class="p-16">
+        <Label text="{{'Last location updated: '+lastTimestamp}}"></Label>
+        <Label text="{{'Coordinates: ('+latitude+', '+longitude+')'}}"></Label>
+    </StackLayout>
+
+    <MapView row="1" #mapView (mapReady)="onMapReady($event)" [latitude]="latitude" [longitude]="longitude" [zoom]="zoom"></MapView>
+
+</GridLayout>
